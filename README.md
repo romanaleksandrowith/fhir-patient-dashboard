@@ -52,5 +52,27 @@ After matching each appointment to the nearest encounter, the conversion dropped
 - `screenshots/` — preview images
 - `output/` — exported mart sample
 
+## 🔍 Data Challenge
+
+One of the main challenges was incorrect data matching.
+
+A naive join between appointments and encounters produced a conversion rate of ~47%, which was unrealistic.
+
+After implementing time-based matching and selecting the closest encounter per appointment, the conversion dropped to ~7%, reflecting a more accurate patient behavior.
+
+## 📈 Business Value
+
+This approach can be used in real clinics to:
+- track patient conversion
+- identify no-show patterns
+- evaluate doctor performance
+- improve scheduling efficiency
+
+## 🚀 Next Steps
+
+- add no-show analysis
+- cohort analysis of returning patients
+- revenue integration
+
 ## Preview
 ![Dashboard Preview](screenshots/dashboard-preview.png)
