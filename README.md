@@ -1,78 +1,188 @@
-# Patient Visit Funnel Dashboard (FHIR API)
+# 🏥 Patient Visit Funnel Dashboard (FHIR API)
 
-## Overview
-Pilot analytics project based on open FHIR API data.
+## 📊 Overview
 
-Goal: build a patient funnel from scheduled appointment to actual visit.
+End-to-end analytics project based on open FHIR API data.
 
-## Data source
-Open FHIR API (HAPI FHIR test server)
+Goal: build a **patient funnel from scheduled appointment to completed visit**.
 
-Resources used:
-- Patient
-- Appointment
-- Encounter
-- Practitioner
+---
 
-## Architecture
-FHIR API → Python ETL → SQLite → SQL mart → Analytics
+## 📸 Dashboard
 
-## What was done
-- extracted healthcare data from open API
-- normalized nested JSON resources
-- loaded data into SQLite staging tables
-- built analytical mart `mart_patient_visit_funnel_v2`
-- matched appointments with nearest encounters
-- calculated KPIs for patient visit funnel
+![Dashboard](screenshots/dashboard-preview.png)
 
-## Business logic
-- Appointment = patient scheduled a visit
-- Encounter with status `finished` = visit completed
+---
 
-## Key metrics
-- Appointments: **1852**
-- Unique patients: **328**
-- Completed visits: **129**
-- Conversion rate: **6.97%**
+## 🎯 Business Problem
 
-## Main insight
-A simple join between appointments and encounters overstated conversion.
-After matching each appointment to the nearest encounter, the conversion dropped to a more realistic level.
+In healthcare systems, appointments and visits (encounters) are often **not directly linked**.
 
-## Tech stack
-- Python
-- Requests
-- Pandas
-- SQLite
-- SQL
+A naive join between these entities can significantly **overestimate conversion rates**, leading to incorrect business conclusions.
 
-## Repository structure
-- `src/` — ETL scripts
-- `sql/` — DDL, mart, analytics
-- `screenshots/` — preview images
-- `output/` — exported mart sample
+---
 
-## 🔍 Data Challenge
+## 🧠 Solution
 
-One of the main challenges was incorrect data matching.
+Implemented a **time-based matching logic**:
 
-A naive join between appointments and encounters produced a conversion rate of ~47%, which was unrealistic.
+* linked each appointment to the **nearest encounter in time**
+* filtered only relevant visit statuses (`finished`)
+* avoided duplicate or incorrect matches
 
-After implementing time-based matching and selecting the closest encounter per appointment, the conversion dropped to ~7%, reflecting a more accurate patient behavior.
+This approach produced a **realistic patient funnel**.
+
+---
+
+## 📈 Key Metrics
+
+* Appointments: **1,852**
+* Unique patients: **328**
+* Completed visits: **129**
+* Conversion rate: **6.97%**
+
+---
+
+## 🔍 Key Insight
+
+A naive join produced:
+
+* ~47% conversion ❌ (incorrect)
+
+After implementing proper matching:
+
+* ~7% conversion ✅ (realistic)
+
+👉 Root cause: incorrect linking between appointments and encounters
+👉 Fix: time-based matching per patient
+
+---
+
+## ⚙️ Data Pipeline
+
+**FHIR API → Python ETL → SQLite → SQL Mart → Dashboard**
+
+### Data extraction
+
+* Source: HAPI FHIR test server
+* Resources:
+
+  * Patient
+  * Appointment
+  * Encounter
+  * Practitioner
+
+### Processing
+
+* JSON parsing
+* normalization of nested structures
+* loading into staging tables
+
+### Storage
+
+* SQLite
+* staging:
+
+  * `stg_patients`
+  * `stg_practitioners`
+  * `stg_appointments`
+  * `stg_encounters`
+
+---
+
+## 🧮 Data Modeling (SQL)
+
+Main mart:
+
+```sql
+mart_patient_visit_funnel_v2
+```
+
+Key logic:
+
+```sql
+visit_completed_flag = case 
+  when encounter_status = 'finished' then 1 
+  else 0 
+end
+```
+
+Matching approach:
+
+* join by `patient_id`
+* select nearest encounter by time difference
+* avoid many-to-many duplication
+
+---
+
+## 📊 Visualization
+
+Dashboard shows:
+
+* appointments over time
+* completed visits over time
+* overall conversion
+
+Tool:
+
+* Excel (Pivot + Charts)
+
+---
+
+## 🛠️ Tech Stack
+
+* Python (Requests, Pandas)
+* SQL
+* SQLite
+* Excel
+* FHIR API
+
+---
+
+## 🧠 Skills Demonstrated
+
+* API data extraction (FHIR)
+* JSON normalization
+* Data modeling (staging → mart)
+* SQL joins and business logic
+* Handling data quality issues
+* Analytical thinking (conversion correction)
+* Dashboard building
+
+---
+
+## 📦 Repository Structure
+
+```
+src/            # Python ETL scripts
+sql/            # SQL logic and transformations
+screenshots/    # dashboard preview
+output/         # mart sample
+```
+
+---
 
 ## 📈 Business Value
 
 This approach can be used in real clinics to:
-- track patient conversion
-- identify no-show patterns
-- evaluate doctor performance
-- improve scheduling efficiency
+
+* track patient conversion
+* identify no-show patterns
+* evaluate doctor performance
+* improve scheduling efficiency
+
+---
 
 ## 🚀 Next Steps
 
-- add no-show analysis
-- cohort analysis of returning patients
-- revenue integration
+* add no-show analysis
+* conversion by practitioner
+* cohort analysis of returning patients
+* migrate dashboard to BI tool (Power BI / Looker)
 
-## Preview
-![Dashboard Preview](screenshots/dashboard-preview.png)
+---
+
+## 👤 Author
+
+Roman
+Data / Business Analyst
